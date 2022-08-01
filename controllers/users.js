@@ -5,6 +5,14 @@ const ValidatorError = require('../errors/validationError');
 const ConflictError = require('../errors/conflictError');
 const UnauthorizedError = require('../errors/unauthorizedError');
 const NotFoundError = require('../errors/notFoundError');
+const {
+  EMAIL_OR_PWD_EMPTY,
+  ERROR_VALIDATION,
+  CONFLICT_EMAIL,
+  WRONG_EMAIL_OR_PWD,
+  USER_NOT_FOUND,
+  WRONG_DATA_ON_UPDATE_USER,
+} = require('../utils/responses');
 
 const SALT_ROUNDS = 10;
 const { JWT_SECRET, NODE_ENV } = process.env;
@@ -22,7 +30,7 @@ module.exports.createUser = (req, res, next) => {
   } = req.body;
 
   if (!email || !password) {
-    throw new ValidatorError('Не передан емейл или пароль');
+    throw new ValidatorError(EMAIL_OR_PWD_EMPTY);
   }
 
   bcrypt.hash(password, SALT_ROUNDS)
@@ -38,11 +46,11 @@ module.exports.createUser = (req, res, next) => {
     }))
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
-        return next(new ValidatorError('Ошибка валидации'));
+        return next(new ValidatorError(ERROR_VALIDATION));
       }
 
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
-        return next(new ConflictError('Емейл занят'));
+        return next(new ConflictError(CONFLICT_EMAIL));
       }
 
       return next(err);
@@ -53,13 +61,13 @@ module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    throw new ValidatorError('Не передан емейл или пароль');
+    throw new ValidatorError(EMAIL_OR_PWD_EMPTY);
   }
 
   User.findOne({ email }).select('+password')
     .then((foundUser) => {
       if (!foundUser) {
-        throw new UnauthorizedError('Неправильный емейл или пароль');
+        throw new UnauthorizedError(WRONG_EMAIL_OR_PWD);
       }
 
       return Promise.all([
@@ -69,7 +77,7 @@ module.exports.login = (req, res, next) => {
     })
     .then(([user, isPasswordCorrect]) => {
       if (!isPasswordCorrect) {
-        throw new UnauthorizedError('Неправильный емейл или пароль');
+        throw new UnauthorizedError(WRONG_EMAIL_OR_PWD);
       }
 
       return jwt.sign(
@@ -92,7 +100,7 @@ module.exports.getUserInfo = (req, res, next) => {
   User.findById(req.user._id, '-password -__v')
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFoundError(USER_NOT_FOUND);
       }
       res.send(user);
     })
@@ -114,13 +122,13 @@ module.exports.updateUser = (req, res, next) => {
   )
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFoundError(USER_NOT_FOUND);
       }
       res.send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return next(new ValidatorError('Некорректные данные при обновлении пользователя'));
+        return next(new ValidatorError(WRONG_DATA_ON_UPDATE_USER));
       }
       return next(err);
     });

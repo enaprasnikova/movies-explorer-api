@@ -2,6 +2,11 @@ const Movie = require('../models/movie');
 const { NotFoundError } = require('../errors/notFoundError');
 const { ForbiddenError } = require('../errors/forbiddenError');
 const {
+  WRONG_DATA_ON_CREATE_MOVIE,
+  MOVIE_NOT_FOUND,
+  PERMISSION_DENIED_ON_DELETE_MOVIE,
+} = require('../utils/responses');
+const {
   STATUS_SUCCESS,
   STATUS_SUCCESS_CREATED,
 } = require('../utils/statusCodes');
@@ -71,7 +76,7 @@ module.exports.createMovie = (req, res, next) => {
         })
         .catch((err) => {
           if (err.name === 'ValidationError') {
-            return next(new ValidatorError('Некорректные данные при создании фильма'));
+            return next(new ValidatorError(WRONG_DATA_ON_CREATE_MOVIE));
           }
           return next(err);
         });
@@ -83,11 +88,11 @@ module.exports.deleteCard = (req, res, next) => {
     .populate('owner', '-__v')
     .then((movie) => {
       if (!movie) {
-        throw new NotFoundError('Фильм не найден');
+        throw new NotFoundError(MOVIE_NOT_FOUND);
       }
 
       if (req.user._id !== movie.owner.id.toString()) {
-        throw new ForbiddenError('Нет прав на удаление фильма');
+        throw new ForbiddenError(PERMISSION_DENIED_ON_DELETE_MOVIE);
       }
       return movie;
     })

@@ -1,59 +1,58 @@
 const express = require('express');
+
 require('dotenv').config();
 
-const { PORT = 3000 } = process.env;
+const helmet = require('helmet');
+
+const { PORT = 3001 } = process.env;
+
+const { URL_MONGO, NODE_ENV } = process.env;
 
 const mongoose = require('mongoose');
+
 const bodyParser = require('body-parser');
-const { celebrate, Joi } = require('celebrate');
+
 const { errors } = require('celebrate');
-const auth = require('./middlewares/auth');
-const UserRoutes = require('./routes/users');
-const MovieRoutes = require('./routes/movies');
-const { createUser, login } = require('./controllers/users');
+
+const cors = require('cors');
+
+const router = require('./routes/index');
+
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const {
-  STATUS_INTERNAL_ERROR,
-} = require('./utils/statusCodes');
+
+const { errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-mongoose.connect('mongodb://localhost:27017/bitfilmsdb');
+mongoose.connect(NODE_ENV === 'production' ? URL_MONGO : 'mongodb://localhost:27017/bitfilmsdb');
+
+app.use(helmet());
+
+const options = {
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://movies.evnap.nomoredomains.xyz',
+    'https://movies.evnap.nomoredomains.xyz',
+    'http://api.movies.evnap.nomoredomains.xyz',
+    'https://api.movies.evnap.nomoredomains.xyz',
+  ],
+  credentials: true, // эта опция позволяет устанавливать куки
+};
+
+app.use('*', cors(options)); // Подключаем первой миддлварой
 
 app.use(requestLogger);
 
-app.use('/users', auth, UserRoutes);
-
-app.use('/movies', auth, MovieRoutes);
-
-app.post('/signin', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required(),
-  }),
-}), login);
-
-app.post('/signup', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    email: Joi.string().required().email(),
-    password: Joi.string().required(),
-  }),
-}), createUser);
+app.use(router);
 
 app.use(errorLogger);
 
 app.use(errors());
 
-app.use((err, req, res, next) => {
-  if (err.statusCode) {
-    return res.status(err.statusCode).send({ message: err.message });
-  }
-
-  return res.status(STATUS_INTERNAL_ERROR).send({ message: 'На сервере произошла ошибка' });
-});
+app.use(errorHandler);
 
 app.listen(PORT);
