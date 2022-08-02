@@ -1,6 +1,6 @@
 const Movie = require('../models/movie');
-const { NotFoundError } = require('../errors/notFoundError');
-const { ForbiddenError } = require('../errors/forbiddenError');
+const NotFoundError = require('../errors/notFoundError');
+const ForbiddenError = require('../errors/forbiddenError');
 const {
   WRONG_DATA_ON_CREATE_MOVIE,
   MOVIE_NOT_FOUND,
@@ -11,7 +11,7 @@ const {
   STATUS_SUCCESS_CREATED,
 } = require('../utils/statusCodes');
 
-const { ValidatorError } = require('../errors/validationError');
+const ValidatorError = require('../errors/validationError');
 
 module.exports.getUserMovies = (req, res, next) => {
   const ownerId = req.user._id;

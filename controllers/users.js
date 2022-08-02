@@ -19,7 +19,6 @@ const { JWT_SECRET, NODE_ENV } = process.env;
 const {
   STATUS_SUCCESS_CREATED,
   MONGO_DUPLICATE_ERROR_CODE,
-  STATUS_UNAUTHORIZED_ERROR,
 } = require('../utils/statusCodes');
 
 module.exports.createUser = (req, res, next) => {
@@ -28,10 +27,6 @@ module.exports.createUser = (req, res, next) => {
     email,
     password,
   } = req.body;
-
-  if (!email || !password) {
-    throw new ValidatorError(EMAIL_OR_PWD_EMPTY);
-  }
 
   bcrypt.hash(password, SALT_ROUNDS)
     .then((hash) => User.create({
@@ -89,11 +84,7 @@ module.exports.login = (req, res, next) => {
     .then((token) => {
       res.send({ token });
     })
-    .catch((err) => {
-      const error = new Error(err.message);
-      error.statusCode = STATUS_UNAUTHORIZED_ERROR;
-      next(error);
-    });
+    .catch(next);
 };
 
 module.exports.getUserInfo = (req, res, next) => {
@@ -129,6 +120,9 @@ module.exports.updateUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return next(new ValidatorError(WRONG_DATA_ON_UPDATE_USER));
+      }
+      if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
+        return next(new ConflictError(CONFLICT_EMAIL));
       }
       return next(err);
     });

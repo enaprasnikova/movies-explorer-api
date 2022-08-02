@@ -21,6 +21,9 @@ const router = require('./routes/index');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const { errorHandler } = require('./middlewares/errorHandler');
+const auth = require('./middlewares/auth');
+const UnknownPathError = require('./errors/unknownPath');
+const { UNKNOWN_PATH_MESSAGE } = require('./utils/responses');
 
 const app = express();
 
@@ -48,6 +51,10 @@ app.use('*', cors(options)); // Подключаем первой миддлва
 app.use(requestLogger);
 
 app.use(router);
+
+app.use(auth, (req, res, next) => {
+  next(new UnknownPathError(UNKNOWN_PATH_MESSAGE));
+});
 
 app.use(errorLogger);
 

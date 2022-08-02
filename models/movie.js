@@ -4,6 +4,8 @@ const { Types } = require('mongoose');
 
 const validator = require('validator');
 
+const { IMAGE_IS_NOT_CORRECT, THUMBNAIL_IS_NOT_CORRECT, TRAILERLINK_IS_NOT_CORRECT } = require('../utils/responses');
+
 const movieSchema = new mongoose.Schema({
   country: {
     type: String,
@@ -28,17 +30,26 @@ const movieSchema = new mongoose.Schema({
   image: {
     type: String,
     required: true,
-    validator: (link) => validator.isURL(link),
+    validate: {
+      validator: (v) => validator.isURL(v),
+      message: IMAGE_IS_NOT_CORRECT,
+    },
   },
   trailerLink: {
     type: String,
     required: true,
-    validator: (link) => validator.isURL(link),
+    validate: {
+      validator: (v) => validator.isURL(v),
+      message: TRAILERLINK_IS_NOT_CORRECT,
+    },
   },
   thumbnail: {
     type: String,
     required: true,
-    validator: (link) => validator.isURL(link),
+    validate: {
+      validator: (v) => validator.isURL(v),
+      message: THUMBNAIL_IS_NOT_CORRECT,
+    },
   },
   owner: {
     type: Types.ObjectId,
@@ -46,7 +57,7 @@ const movieSchema = new mongoose.Schema({
     required: true,
   },
   movieId: {
-    type: Types.ObjectId,
+    type: Number,
     required: true,
   },
   nameRU: {

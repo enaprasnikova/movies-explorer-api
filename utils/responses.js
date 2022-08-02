@@ -9,6 +9,10 @@ const MOVIE_NOT_FOUND = 'Фильм не найден';
 const PERMISSION_DENIED_ON_DELETE_MOVIE = 'Нет прав на удаление фильма';
 const PERMISSION_DENIED = 'Необходима авторизация';
 const INTERNAL_ERROR = 'На сервере произошла ошибка';
+const UNKNOWN_PATH_MESSAGE = 'Указан неправильный путь';
+const TRAILERLINK_IS_NOT_CORRECT = 'Поле trailerLink должно быть в формате URL';
+const THUMBNAIL_IS_NOT_CORRECT = 'Поле thumbnail должно быть в формате URL';
+const IMAGE_IS_NOT_CORRECT = 'Поле image должно быть в формате URL';
 
 module.exports = {
   EMAIL_OR_PWD_EMPTY,
@@ -22,4 +26,8 @@ module.exports = {
   PERMISSION_DENIED_ON_DELETE_MOVIE,
   PERMISSION_DENIED,
   INTERNAL_ERROR,
+  UNKNOWN_PATH_MESSAGE,
+  THUMBNAIL_IS_NOT_CORRECT,
+  TRAILERLINK_IS_NOT_CORRECT,
+  IMAGE_IS_NOT_CORRECT,
 };
