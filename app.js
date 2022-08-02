@@ -30,7 +30,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-mongoose.connect(NODE_ENV === 'production' ? URL_MONGO : 'mongodb://localhost:27017/bitfilmsdb');
+mongoose.connect(NODE_ENV === 'production' ? URL_MONGO : 'mongodb://localhost:27017/moviesdb');
 
 app.use(helmet());
 
